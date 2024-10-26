@@ -75,7 +75,7 @@ for url_num in range(len(url_cls)):
             driver.back()
         except Exception as e:
             if count >= 5:
-                print("サーバーからのデータ取得に失敗")
+                print(f"{len(shopinfo)}個目のデータ取得に失敗.実行回数:({count})")
                 break
             else:
                 time.sleep(3)
@@ -110,7 +110,7 @@ while res:
                 driver.back()
             except Exception as e:
                 if count >= 5:
-                    print("サーバーからのデータ取得に失敗")
+                    print(f"{len(shopinfo)}個目のデータ取得に失敗.実行回数:({count})")
                     break
             else:
                 time.sleep(3)
