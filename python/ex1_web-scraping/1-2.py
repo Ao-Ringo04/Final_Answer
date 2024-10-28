@@ -2,12 +2,12 @@ from selenium import webdriver
 import pandas as pa
 import re
 import time
+import json
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
-
 #店情報の抽出
 def shopext(html_raw,shop_info):
     #店名
@@ -49,78 +49,54 @@ def shopext(html_raw,shop_info):
             shop_info[shop_name]["URL"]=""
             shop_info[shop_name]["SSL"]=""
     return shop_info
-
+#店情報の取得
 chop = Options()
 chop.add_argument("--headless") 
 driver = webdriver.Chrome(options=chop)
-driver.get("https://r.gnavi.co.jp/area/jp/rs/?fwp=東京&date=2024101")
+driver.get("https://r.gnavi.co.jp/area/jp/rs/?fwp=東京&date=2024101") #エリアが東京のURL
 url_cls = driver.find_elements(By.CLASS_NAME, "style_title___HrjW")
-
 shopinfo = {}
 for url_num in range(len(url_cls)):
     if len(shopinfo) >= 50:
         break
-    res =False
-    count = 0
-    while not res:
-        try:
-            url_cls2 = driver.find_elements(By.CLASS_NAME, "style_title___HrjW")
-            WebDriverWait(driver, 10).until(EC.element_to_be_clickable
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable
                                             ((By.CLASS_NAME, "style_title___HrjW")))
-            url_cls2[url_num].click()
-            html = driver.page_source.encode('utf-8')
-            shopinfo = shopext(html,shopinfo)
-            res = True
-            time.sleep(3)
-            driver.back()
-        except Exception as e:
-            if count >= 5:
-                print(f"{len(shopinfo)}個目のデータ取得に失敗.実行回数:({count})")
-                break
-            else:
-                time.sleep(3)
-                count = count + 1
-
+    url_cls2 = driver.find_elements(By.CLASS_NAME, "style_title___HrjW")
+    url_cls2[url_num].click()
+    html = driver.page_source.encode('utf-8')
+    shopinfo = shopext(html,shopinfo)
+    driver.back()
+    time.sleep(3)
+driver.quit()
 if len(shopinfo) >= 50:
     res = False
 else:
     res = True
-
 while res:
-    nextpage = driver.find_element(By.CLASS_NAME, "style_nextIcon__M_Me_")
+    chop = Options()
+    chop.add_argument("--headless") 
+    driver = webdriver.Chrome(options=chop)
+    driver.get("https://r.gnavi.co.jp/area/jp/rs/?fwp=東京&date=2024101") #エリアが東京のURL
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable
                                     ((By.CLASS_NAME, "style_nextIcon__M_Me_")))
+    nextpage = driver.find_element(By.CLASS_NAME, "style_nextIcon__M_Me_")
     nextpage.click()
-    url_cls = driver.find_elements(By.CLASS_NAME, "style_title___HrjW")
-    for url_num in range(len(url_cls)):
+    numurl = len(driver.find_elements(By.CLASS_NAME, "style_title___HrjW"))
+    for url_num in range(numurl):
         if len(shopinfo) >= 50:
+            res = False
             break
-        res =False
-        count = 0
-        while not res:
-            try:
-                url_cls2 = driver.find_elements(By.CLASS_NAME, "style_title___HrjW")
-                WebDriverWait(driver, 30).until(EC.element_to_be_clickable
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable
                                                 ((By.CLASS_NAME, "style_title___HrjW")))
-                url_cls2[url_num].click()
-                html = driver.page_source.encode('utf-8')
-                shopinfo = shopext(html,shopinfo)
-                res = True
-                time.sleep(3)
-                driver.back()
-            except Exception as e:
-                if count >= 5:
-                    print(f"{len(shopinfo)}個目のデータ取得に失敗.実行回数:({count})")
-                    break
-            else:
-                time.sleep(3)
-                count = count + 1
-        if len(shopinfo) >= 50:
-            break
-driver.quit()
-
+        url_cls2 = driver.find_elements(By.CLASS_NAME, "style_title___HrjW")
+        url_cls2[url_num].click()
+        html = driver.page_source.encode('utf-8')
+        shopinfo = shopext(html,shopinfo) 
+        driver.back()
+        time.sleep(3)     
+#csvの作成
 shopname_list = list(shopinfo.keys())
-shop_data =[]
+shop_data =[] 
 for shop_name in shopname_list:
     tell = shopinfo[shop_name]["電話番号"]
     pref = shopinfo[shop_name]["都道府県"]
@@ -131,6 +107,6 @@ for shop_name in shopname_list:
     ssl = shopinfo[shop_name]["SSL"]
     shop_data.append([shop_name,tell,"",pref,city,addr,build,shopurl,ssl])
 chan = pa.DataFrame(shop_data,columns =["店舗名","電話番号","メールアドレス","都道府県","市区町村","番地名","建物名","URL","SSL"])
-chan.to_csv("1-1.csv",index=False)
+chan.to_csv("1-2.csv",index=False)
           
     

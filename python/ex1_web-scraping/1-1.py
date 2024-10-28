@@ -4,7 +4,6 @@ import re
 from bs4 import BeautifulSoup
 import time
 import json
-
 #HTMLの取得
 def gethtml(url):
     res = False
@@ -23,7 +22,6 @@ def gethtml(url):
                 time.sleep(3)
                 count = count + 1
     return html_raw
-
 #店情報の抽出
 def shopext(html_raw,shop_info):
     #店名
@@ -65,7 +63,6 @@ def shopext(html_raw,shop_info):
             shop_info[shop_name]["URL"]=""
             shop_info[shop_name]["SSL"]=""
     return shop_info
-
 #urlからの情報取得
 url = "https://r.gnavi.co.jp/area/jp/rs/?fwp=東京&date=20241014"
 html_data = gethtml(url)
@@ -78,13 +75,11 @@ for url in urls:
     html_data = gethtml(url)
     shop_extr = shopext(html_data,shop_info)
     time.sleep(3)
-
 if len(shop_extr) < 50:
     res = True
     page_num = 2 #webページの指定
 else:
     res = False
-
 while res:
     url = f"https://r.gnavi.co.jp/area/jp/rs/?fwp=%E6%9D%B1%E4%BA%AC&date=20241014&p={page_num}"
     page_num = page_num + 1
@@ -100,6 +95,7 @@ while res:
         html_data = gethtml(url)
         shop_extr = shopext(html_data,shop_extr)
         time.sleep(3)
+#CSVの作成
 shopname_list = list(shop_extr.keys())
 shop_data =[]
 for shop_name in shopname_list:
@@ -111,6 +107,5 @@ for shop_name in shopname_list:
     shopurl = shop_extr[shop_name]["URL"]
     ssl = shop_extr[shop_name]["SSL"]
     shop_data.append([shop_name,tell,"",pref,city,addr,build,shopurl,ssl])
-
 chan = pa.DataFrame(shop_data,columns =["店舗名","電話番号","メールアドレス","都道府県","市区町村","番地名","建物名","URL","SSL"])
 chan.to_csv("1-1.csv",index=False)
