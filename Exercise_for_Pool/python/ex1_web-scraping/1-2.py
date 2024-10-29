@@ -30,6 +30,7 @@ def shopext(html_raw,shop_info):
     shop_info[shop_name]["都道府県"] = addr_spr.group(1)
     shop_info[shop_name]["市区町村"] = addr_spr.group(2)
     shop_info[shop_name]["番地"] = addr_spr.group(4)
+    #建物
     building = soup.find(class_='locality')
     if building == None:
         shop_info[shop_name]["建物名"] = ""
