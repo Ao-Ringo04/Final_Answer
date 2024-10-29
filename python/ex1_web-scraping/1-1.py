@@ -6,11 +6,12 @@ import time
 import json
 #HTMLの取得
 def gethtml(url):
+    option ={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36" }
     res = False
     count = 0
     while not res:
         try:
-            html_raw = requests.get(url)
+            html_raw = requests.get(url,headers=option)
             html_raw.encoding = 'utf-8'
             html_raw = html_raw.text
             res = True
@@ -108,4 +109,4 @@ for shop_name in shopname_list:
     ssl = shop_extr[shop_name]["SSL"]
     shop_data.append([shop_name,tell,"",pref,city,addr,build,shopurl,ssl])
 chan = pa.DataFrame(shop_data,columns =["店舗名","電話番号","メールアドレス","都道府県","市区町村","番地名","建物名","URL","SSL"])
-chan.to_csv("1-1.csv",index=False)
+chan.to_csv("1-1.csv",index=False,encoding='utf-8-sig')
