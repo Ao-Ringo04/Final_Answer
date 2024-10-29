@@ -32,6 +32,13 @@ def shopext(html_raw,shop_info):
     #電話
     tell = soup.find(class_='number').get_text(strip=True)
     shop_info[shop_name]["電話番号"] = tell
+    #メールアドレス
+    raw_mail = soup.find('a', href=re.compile(r'^mailto:'))
+    if raw_mail == None:
+        shop_info[shop_name]["メールアドレス"] = ""
+    else:
+        mail = raw_mail['href'].replace('mailto:',"")
+        shop_info[shop_name]["メールアドレス"] = mail
     #住所
     addr = soup.find(class_='region').get_text(strip=True)
     addr_spr = re.match(r'(.+?(?:都|道|府|県))(.+?(郡|市|区|町|村))(.+)', addr)
@@ -42,12 +49,21 @@ def shopext(html_raw,shop_info):
     if building == None:
         shop_info[shop_name]["建物名"] = ""
     else:
-        shop_info[shop_name]["建物名"] = building.get('href')
+        shop_info[shop_name]["建物名"] = building.get_text(strip=True)
     #店のURL
     raw_url = soup.find(class_='url go-off')
     if raw_url == None:
-        shop_info[shop_name]["URL"]=""
-        shop_info[shop_name]["SSL"]=""
+        raw_url = soup.find('a', class_='sv-of double')
+        if raw_url == None:
+            shop_info[shop_name]["URL"]=""
+            shop_info[shop_name]["SSL"]=""
+        else:
+            shop_url = raw_url['href']
+            shop_info[shop_name]["URL"]=shop_url
+            if "https" in shop_url:
+                shop_info[shop_name]["SSL"]= True
+            elif "http"in shop_url:
+                shop_info[shop_name]["SSL"]= False
     else:
         raw_url = raw_url.get('data-o')
         jsondata = json.loads(raw_url)
@@ -61,8 +77,18 @@ def shopext(html_raw,shop_info):
             elif "http"in shop_url:
                 shop_info[shop_name]["SSL"]= False
         else:
-            shop_info[shop_name]["URL"]=""
-            shop_info[shop_name]["SSL"]=""
+            raw_url = soup.find('a', class_='sv-of double')
+            if raw_url == None:
+                shop_info[shop_name]["URL"]=""
+                shop_info[shop_name]["SSL"]=""
+            else:
+                shop_url = raw_url['href']
+                shop_info[shop_name]["URL"]=shop_url
+                if "https" in shop_url:
+                    shop_info[shop_name]["SSL"]= True
+                elif "http"in shop_url:
+                    shop_info[shop_name]["SSL"]= False
+
     return shop_info
 #urlからの情報取得
 url = "https://r.gnavi.co.jp/area/jp/rs/?fwp=東京&date=20241014"
@@ -101,12 +127,13 @@ shopname_list = list(shop_extr.keys())
 shop_data =[]
 for shop_name in shopname_list:
     tell = shop_extr[shop_name]["電話番号"]
+    mailadd= shop_extr[shop_name]["メールアドレス"]
     pref = shop_extr[shop_name]["都道府県"]
     city = shop_extr[shop_name]["市区町村"]
     addr = shop_extr[shop_name]["番地"]
     build = shop_extr[shop_name]["建物名"]
     shopurl = shop_extr[shop_name]["URL"]
     ssl = shop_extr[shop_name]["SSL"]
-    shop_data.append([shop_name,tell,"",pref,city,addr,build,shopurl,ssl])
+    shop_data.append([shop_name,tell,mailadd,pref,city,addr,build,shopurl,ssl])
 chan = pa.DataFrame(shop_data,columns =["店舗名","電話番号","メールアドレス","都道府県","市区町村","番地名","建物名","URL","SSL"])
 chan.to_csv("1-1.csv",index=False,encoding='utf-8-sig')

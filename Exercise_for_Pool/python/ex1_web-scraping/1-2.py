@@ -12,45 +12,67 @@ from bs4 import BeautifulSoup
 def shopext(html_raw,shop_info):
     #店名
     soup = BeautifulSoup(html_raw, 'html.parser')
-    try:
-        shop_name = soup.find(class_='shop-info__name').get_text(strip=True)
-        shop_info[shop_name]={}
-        #電話
-        tell = soup.find(class_='number').get_text(strip=True)
-        shop_info[shop_name]["電話番号"] = tell
-        #住所
-        addr = soup.find(class_='region').get_text(strip=True)
-        addr_spr = re.match(r'(.+?(?:都|道|府|県))(.+?(郡|市|区|町|村))(.+)', addr)
-        shop_info[shop_name]["都道府県"] = addr_spr.group(1)
-        shop_info[shop_name]["市区町村"] = addr_spr.group(2)
-        shop_info[shop_name]["番地"] = addr_spr.group(4)
-        building = soup.find(class_='locality')
-        if building == None:
-            shop_info[shop_name]["建物名"] = ""
-        else:
-            shop_info[shop_name]["建物名"] = building.get('href')
-        #店のURL
-        raw_url = soup.find(class_='url go-off')
+    shop_name = soup.find(class_='shop-info__name').get_text(strip=True)
+    shop_info[shop_name]={}
+    #電話
+    tell = soup.find(class_='number').get_text(strip=True)
+    shop_info[shop_name]["電話番号"] = tell
+     #メールアドレス
+    raw_mail = soup.find('a', href=re.compile(r'^mailto:'))
+    if raw_mail == None:
+        shop_info[shop_name]["メールアドレス"] = ""
+    else:
+        mail = raw_mail['href'].replace('mailto:',"")
+        shop_info[shop_name]["メールアドレス"] = mail
+    #住所
+    addr = soup.find(class_='region').get_text(strip=True)
+    addr_spr = re.match(r'(.+?(?:都|道|府|県))(.+?(郡|市|区|町|村))(.+)', addr)
+    shop_info[shop_name]["都道府県"] = addr_spr.group(1)
+    shop_info[shop_name]["市区町村"] = addr_spr.group(2)
+    shop_info[shop_name]["番地"] = addr_spr.group(4)
+    building = soup.find(class_='locality')
+    if building == None:
+        shop_info[shop_name]["建物名"] = ""
+    else:
+        shop_info[shop_name]["建物名"] = building.get_text(strip=True)
+    #店のURL
+    raw_url = soup.find(class_='url go-off')
+    if raw_url == None:
+        raw_url = soup.find('a', class_='sv-of double')
         if raw_url == None:
             shop_info[shop_name]["URL"]=""
             shop_info[shop_name]["SSL"]=""
         else:
-            raw_url = raw_url.get('data-o')
-            jsondata = json.loads(raw_url)
-            if jsondata is not None:
-                a_url = jsondata["a"]
-                b_url = jsondata["b"]
-                shop_url = b_url +"://"+ a_url
+            shop_url = raw_url['href']
+            shop_info[shop_name]["URL"]=shop_url
+            if "https" in shop_url:
+                shop_info[shop_name]["SSL"]= True
+            elif "http"in shop_url:
+                shop_info[shop_name]["SSL"]= False
+    else:
+        raw_url = raw_url.get('data-o')
+        jsondata = json.loads(raw_url)
+        if jsondata is not None:
+            a_url = jsondata["a"]
+            b_url = jsondata["b"]
+            shop_url = b_url +"://"+ a_url
+            shop_info[shop_name]["URL"]=shop_url
+            if "https" in shop_url:
+                shop_info[shop_name]["SSL"]= True
+            elif "http"in shop_url:
+                shop_info[shop_name]["SSL"]= False
+        else:
+            raw_url = soup.find('a', class_='sv-of double')
+            if raw_url == None:
+                shop_info[shop_name]["URL"]=""
+                shop_info[shop_name]["SSL"]=""
+            else:
+                shop_url = raw_url['href']
                 shop_info[shop_name]["URL"]=shop_url
                 if "https" in shop_url:
                     shop_info[shop_name]["SSL"]= True
                 elif "http"in shop_url:
                     shop_info[shop_name]["SSL"]= False
-            else:
-                shop_info[shop_name]["URL"]=""
-                shop_info[shop_name]["SSL"]=""
-    except Exception as e:
-        print('取得に失敗')
     return shop_info
 #店情報の取得
 chop = Options()
@@ -101,14 +123,13 @@ shopname_list = list(shopinfo.keys())
 shop_data =[] 
 for shop_name in shopname_list:
     tell = shopinfo[shop_name]["電話番号"]
+    mailadd= shopinfo[shop_name]["メールアドレス"]
     pref = shopinfo[shop_name]["都道府県"]
     city = shopinfo[shop_name]["市区町村"]
     addr = shopinfo[shop_name]["番地"]
     build = shopinfo[shop_name]["建物名"]
     shopurl = shopinfo[shop_name]["URL"]
     ssl = shopinfo[shop_name]["SSL"]
-    shop_data.append([shop_name,tell,"",pref,city,addr,build,shopurl,ssl])
-print(len(shop_data))
+    shop_data.append([shop_name,tell,mailadd,pref,city,addr,build,shopurl,ssl])
 chan = pa.DataFrame(shop_data,columns =["店舗名","電話番号","メールアドレス","都道府県","市区町村","番地名","建物名","URL","SSL"])
-chan = chan.replace('\uff0d', '-', regex=True)
 chan.to_csv("1-2.csv",index=False,encoding='utf-8-sig')
