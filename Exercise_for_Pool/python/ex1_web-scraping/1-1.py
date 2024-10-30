@@ -25,8 +25,8 @@ def gethtml(url):
     return html_raw
 #店情報の抽出
 def shopext(html_raw,shop_info):
-    #店名
     soup = BeautifulSoup(html_raw, 'html.parser')
+    #店名
     shop_name = soup.find(class_='shop-info__name').get_text(strip=True)
     shop_info[shop_name]={}
     #電話
