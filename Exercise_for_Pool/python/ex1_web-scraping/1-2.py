@@ -118,7 +118,8 @@ while res:
         html = driver.page_source.encode("utf-8")
         shopinfo = shopext(html,shopinfo) 
         driver.back()
-        time.sleep(3)     
+        time.sleep(3)
+driver.quit()
 #csvの作成
 shopname_list = list(shopinfo.keys())
 shop_data =[] 
