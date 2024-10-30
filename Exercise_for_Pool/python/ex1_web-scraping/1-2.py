@@ -99,9 +99,9 @@ if len(shopinfo) >= 50:
     res = False
 else:
     res = True
-while res:
     driver = webdriver.Chrome(options=chop)
     driver.get("https://r.gnavi.co.jp/area/jp/rs/?fwp=東京&date=2024101") #エリアが東京のURL
+while res:
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable
                                     ((By.CLASS_NAME, "style_nextIcon__M_Me_")))
     nextpage = driver.find_element(By.CLASS_NAME, "style_nextIcon__M_Me_")
