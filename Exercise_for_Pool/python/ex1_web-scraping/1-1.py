@@ -92,7 +92,7 @@ def shopext(html_raw,shop_info):
 
     return shop_info
 #urlからの情報取得
-url = "https://r.gnavi.co.jp/area/jp/rs/?fwp=東京&date=20241014"
+url = "https://r.gnavi.co.jp/area/jp/rs/?fwp=東京&date=20241014" #エリアが東京のURL
 html_data = gethtml(url)
 soup = BeautifulSoup(html_data, 'html.parser')
 links = soup.find_all("a", class_="style_titleLink__oiHVJ")
