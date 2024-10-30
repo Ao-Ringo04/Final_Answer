@@ -105,7 +105,7 @@ for url in urls:
     html_data = gethtml(url)
     shop_extr = shopext(html_data,shop_info)
     time.sleep(3)
-if len(shop_extr) < 50:
+if len(shop_info) < 50:
     res = True
     page_num = 2 #webページの指定
 else:
@@ -119,11 +119,11 @@ while res:
     urls = [url.get("href") for url in links if url.get("href") and 'https://r.gnavi' in url.get("href")]
     urls = list(set(urls))
     for url in urls:
-        if len(shop_extr) ==50:
+        if len(shop_info) ==50:
             res = False
             break
         html_data = gethtml(url)
-        shop_extr = shopext(html_data,shop_extr)
+        shop_info = shopext(html_data,shop_info)
         time.sleep(3)
 #CSVの作成
 shopname_list = list(shop_extr.keys())
