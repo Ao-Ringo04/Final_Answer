@@ -100,6 +100,8 @@ urls = [url.get("href") for url in links if url.get("href") and 'https://r.gnavi
 urls = list(set(urls))
 shop_info = {}
 for url in urls:
+    if len(shop_extr) >= 50:
+        break
     html_data = gethtml(url)
     shop_extr = shopext(html_data,shop_info)
     time.sleep(3)
