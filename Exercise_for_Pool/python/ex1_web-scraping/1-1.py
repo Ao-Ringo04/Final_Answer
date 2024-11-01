@@ -103,7 +103,7 @@ for url in urls:
     if len(shop_info) >= 50:
         break
     html_data = gethtml(url)
-    shop_extr = shopext(html_data,shop_info)
+    shop_info = shopext(html_data,shop_info)
     time.sleep(3)
 if len(shop_info) < 50:
     res = True
@@ -124,19 +124,18 @@ while res:
             break
         html_data = gethtml(url)
         shop_info = shopext(html_data,shop_info)
-        time.sleep(3)
 #CSVの作成
-shopname_list = list(shop_extr.keys())
+shopname_list = list(shop_info.keys())
 shop_data =[]
 for shop_name in shopname_list:
-    tell = shop_extr[shop_name]["電話番号"]
-    mailadd= shop_extr[shop_name]["メールアドレス"]
-    pref = shop_extr[shop_name]["都道府県"]
-    city = shop_extr[shop_name]["市区町村"]
-    addr = shop_extr[shop_name]["番地"]
-    build = shop_extr[shop_name]["建物名"]
-    shopurl = shop_extr[shop_name]["URL"]
-    ssl = shop_extr[shop_name]["SSL"]
+    tell = shop_info[shop_name]["電話番号"]
+    mailadd= shop_info[shop_name]["メールアドレス"]
+    pref = shop_info[shop_name]["都道府県"]
+    city = shop_info[shop_name]["市区町村"]
+    addr = shop_info[shop_name]["番地"]
+    build = shop_info[shop_name]["建物名"]
+    shopurl = shop_info[shop_name]["URL"]
+    ssl = shop_info[shop_name]["SSL"]
     shop_data.append([shop_name,tell,mailadd,pref,city,addr,build,shopurl,ssl])
 chan = pa.DataFrame(shop_data,columns =["店舗名","電話番号","メールアドレス","都道府県","市区町村","番地名","建物名","URL","SSL"])
 chan.to_csv("1-1.csv",index=False,encoding='utf-8-sig')
